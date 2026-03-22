@@ -252,9 +252,8 @@ def safe_parse(response):
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/your-username/prompt-optimization-imdb.git
+git clone https://github.com/Ramadiaw12/sentiment_analysis
 cd prompt-optimization-imdb
-pip install -r requirements.txt
 ```
 
 ### Configuration
