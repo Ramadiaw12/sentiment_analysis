@@ -1,301 +1,215 @@
-# ⚡ Prompt Optimization for Sentiment Analysis
-### *A controlled experimental framework for evaluating LLM prompting strategies on IMDb*
+# 🧠 SMA — Prompt Engineering for Multi-Agent Systems
+### Sentiment Analysis on IMDb Movie Reviews
 
-<br>
+<div align="center">
 
-> **Core question:** Do advanced prompting techniques actually improve performance on tasks modern LLMs already master?
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
+[![HuggingFace](https://img.shields.io/badge/Dataset-IMDb-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/datasets/imdb)
+[![License](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
 
-<br>
+*Exploring Zero-Shot · Few-Shot · Chain-of-Thought prompting strategies with GPT-4o*
 
----
-
-## 📌 Table of Contents
-
-- [Problem Statement](#-problem-statement)
-- [Prompt Strategies](#-prompt-strategies-compared)
-- [System Architecture](#️-system-architecture)
-- [Experimental Pipeline](#-experimental-pipeline)
-- [Results & Insights](#-results)
-- [Core Components](#-core-components)
-- [Code Overview](#-code-overview)
-- [Experimental Design](#-experimental-design)
-- [Pitfalls Avoided](#️-pitfalls-avoided)
-- [Future Work](#-future-improvements)
-- [Installation](#-installation)
-- [Contributing](#-contributing)
+</div>
 
 ---
 
-## 🎯 Problem Statement
+## 📋 Table of Contents
 
-Modern LLMs achieve impressive zero-shot performance across a wide range of NLP tasks.  
-But does adding complexity — examples, reasoning chains — genuinely move the needle?
-
-This project provides a **controlled, reproducible experimental framework** to answer that question using **IMDb sentiment classification** as the benchmark task.
-
----
-
-## 🧠 Prompt Strategies Compared
-
-| Strategy | Description | Complexity | Expected Gain |
-|---|---|:---:|:---:|
-| **Zero-shot** | Instruction only | ⭐ | Baseline |
-| **Few-shot** | + labeled examples | ⭐⭐ | Medium |
-| **Chain-of-Thought** | + explicit reasoning steps | ⭐⭐⭐ | High |
+- [Overview](#-overview)
+- [Project Structure](#-project-structure)
+- [Key Features](#-key-features)
+- [Installation](#️-installation)
+- [Methodology](#-methodology)
+  - [Zero-Shot Prompting](#zero-shot-prompting)
+  - [Few-Shot Prompting](#few-shot-prompting)
+  - [Chain-of-Thought (CoT) Prompting](#chain-of-thought-cot-prompting)
+- [Dataset](#-dataset)
+- [Evaluation](#-evaluation)
+- [Results](#-results)
+- [Future Work](#-future-work)
 
 ---
 
-## ⚙️ System Architecture
+## 🎯 Overview
 
+This project explores **Prompt Engineering techniques** applied to **sentiment analysis** using the IMDb movie reviews dataset. We evaluate three distinct prompting strategies with GPT-4o to classify reviews as **positive** or **negative**, measuring performance through F1-score and stability across multiple runs.
+
+The work serves as a foundation for **Multi-Agent Systems**, where specialized agents can be orchestrated with optimized prompts for specific NLP tasks.
+
+---
+
+## 📁 Project Structure
 ```
-IMDb Dataset (50k)
-        │
-        ▼
-  Train / Test Split (80 / 20)
-   ┌────┴────┐
-   │         │
-Training   Golden
-Examples   Dataset
-   │         │
-   ▼         ▼
-Few-shot  Evaluation
-Sampling     Set
-   │         │
-   ▼         │
-Prompt       │
-Builder ─────┤
-             │
-             ▼
-       LLM Inference
-             │
-             ▼
-        Predictions
-             │
-             ▼
-    F1 Score Calculation
+sma-prompt-engineering/
+├── .venv/
+├── .env/
+├── .gitignore
+├── .python-version
+├── pyproject.toml
+├── README.md
+├── sa.ipynb
+└── uv.lock
 ```
 
 ---
 
-## 🔬 Experimental Pipeline
+## ✨ Key Features
 
-```
-User  ──► Prompt Builder ──► LLM ──► Evaluator
-  ▲          (strategy)              │
-  │                                  │  compare vs. ground truth
-  └──────────── F1 Score ◄───────────┘
-```
-
-Each run follows this sequence:
-
-1. Build a prompt using the selected strategy (zero-shot / few-shot / CoT)
-2. Send the prompt + review text to the LLM
-3. Parse the prediction from the model response
-4. Compare prediction against the ground truth label
-5. Aggregate and return the micro F1 score
-
----
-
-## 📊 Results
-
-| Strategy | F1 Score | Interpretation |
-|---|:---:|---|
-| 🟢 Zero-shot | **0.95** | Strong baseline — the task is already solved |
-| 🟡 Few-shot | **0.95** | No measurable improvement |
-| 🔵 Chain-of-Thought | **0.95** | Overkill for binary classification |
-
-### 🔍 Key Takeaways
-
-- LLMs already master binary sentiment classification — the ceiling is nearly reached at zero-shot
-- Adding labeled examples does **not** improve an already-saturated task
-- Chain-of-Thought reasoning adds latency and cost with **zero accuracy benefit** here
-- **Prompt complexity ≠ better performance** — match strategy to task difficulty
-
----
-
-## 🧩 Core Components
-
-```
-Dataset ──► Preprocessing ──► Prompt Builder ──► LLM ──► Parser ──► Evaluator
-```
-
-| Component | Role |
+| Feature | Details |
 |---|---|
-| `Dataset` | IMDb 50k reviews, balanced positive/negative |
-| `Preprocessing` | Clean split to avoid data leakage |
-| `Prompt Builder` | Assembles system + few-shot examples + user turn |
-| `LLM` | GPT-4, temperature = 0 (deterministic) |
-| `Parser` | Robust keyword extraction from model output |
-| `Evaluator` | Micro F1 score against gold labels |
+| 📦 **Dataset** | IMDb movie reviews — 25,000 training samples via HuggingFace |
+| 🤖 **Model** | OpenAI GPT-4o · `temperature=0` for deterministic outputs |
+| 📐 **Metric** | Micro F1-score on 20 held-out golden examples |
+| 🔁 **Stability** | 10 evaluation runs with randomized few-shot examples |
+| 🧪 **Strategies** | Zero-Shot · Few-Shot · Chain-of-Thought |
 
 ---
 
-## 💻 Code Overview
+## 🛠️ Installation
 
-### Prompt Construction
-
-```python
-def create_prompt(system_message, examples, user_template):
-    """
-    Build a multi-turn prompt from a system message,
-    optional few-shot examples, and a user template.
-    """
-    prompt = [{'role': 'system', 'content': system_message}]
-
-    for ex in examples:
-        prompt += [
-            {'role': 'user',      'content': user_template.format(movie_review=ex['text'])},
-            {'role': 'assistant', 'content': ex['sentiment']},
-        ]
-
-    return prompt
-```
-
-### Evaluation Engine
-
-```python
-def evaluate_prompt(prompt, gold_examples, user_template, model):
-    """
-    Run the full evaluation loop and return micro F1.
-    """
-    predictions, truths = [], []
-
-    for example in gold_examples:
-        response = model.invoke(
-            prompt + [{'role': 'user', 'content': user_template.format(
-                movie_review=example['text']
-            )}]
-        )
-        predictions.append(safe_parse(response))
-        truths.append(example['sentiment'])
-
-    return f1_score(truths, predictions, average='micro')
-```
-
-### Robust Output Parser
-
-```python
-def safe_parse(response):
-    """
-    Extract sentiment label from free-form model output.
-    Falls back to 'unknown' rather than crashing.
-    """
-    text = response.content.lower()
-
-    if 'negative' in text:
-        return 'negative'
-    elif 'positive' in text:
-        return 'positive'
-
-    return 'unknown'
-```
-
----
-
-## 🧪 Experimental Design
-
-| Variable | Value | Rationale |
-|---|---|---|
-| Model | GPT-4 | Stable, well-documented reference point |
-| Temperature | 0 | Deterministic — reproducible across runs |
-| Dataset | IMDb | Large, balanced, widely benchmarked |
-| Metric | Micro F1 | Robust to class imbalance |
-| Split | 80 / 20 | Standard train/eval split |
-
----
-
-## ⚠️ Pitfalls Avoided
-
-### ❌ Data Leakage
-
-Few-shot examples must be sampled **after** the train/test split — never before.
-
-```python
-# ❌ BAD — examples may bleed into the evaluation set
-examples = sample(full_dataset)
-train, test = split(full_dataset)
-
-# ✅ GOOD — evaluation set is never touched during example selection
-train, test = split(full_dataset)
-examples = sample(train)
-```
-
-### ✅ Robust Parsing
-
-The parser handles varied model phrasing without throwing errors:
-
-```python
-def safe_parse(response):
-    text = response.content.lower()
-    if 'negative' in text:
-        return 'negative'
-    elif 'positive' in text:
-        return 'positive'
-    return 'unknown'   # graceful fallback, tracked separately
-```
-
----
-
-## 🚀 Future Improvements
-
-| Direction | Description |
-|---|---|
-| **Prompt Ensembling** | Aggregate predictions across multiple prompt variants |
-| **Dynamic Few-shot** | Select examples by semantic similarity to the input |
-| **Multi-Model Comparison** | Replicate across GPT-3.5, Claude, Mistral, Llama |
-| **Self-Consistency** | Sample multiple reasoning paths and take majority vote |
-| **Error Analysis** | Characterise the ~5% of misclassified reviews |
-| **Harder Tasks** | Move to aspect-level or multi-class sentiment where CoT may shine |
-
----
-
-## 📦 Installation
-
+### 1. Clone the repository
 ```bash
-git clone https://github.com/Ramadiaw12/sentiment_analysis
-cd prompt-optimization-imdb
+git clone https://github.com/yourusername/sma-prompt-engineering.git
+cd sma-prompt-engineering
 ```
 
-### Configuration
-
+### 2. Create a virtual environment
 ```bash
-cp config/.env.example .env
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Set up environment variables
+
+Create a `.env` file at the root:
 ```env
-OPENAI_API_KEY=your_key_here
+OPENAI_API_KEY=your-api-key-here
 ```
 
 ---
 
-## 🤝 Contributing
+## 🔬 Methodology
 
-Contributions are welcome — especially new prompt strategies or additional benchmark datasets.
+### Zero-Shot Prompting
 
-```bash
-# 1. Fork the repository
-# 2. Create your feature branch
-git checkout -b feature/your-improvement
-
-# 3. Commit your changes
-git commit -m "feat: add dynamic few-shot selection"
-
-# 4. Push and open a Pull Request
-git push origin feature/your-improvement
+The model receives only a system instruction — **no examples provided**.
 ```
-
-Please keep pull requests focused on a single concern and include evaluation results where applicable.
+System Message:
+Classify the sentiment of movie reviews presented in the input as
+'positive' or 'negative'. Movie reviews will be delimited by triple
+backticks in the input. Answer only 'positive' or 'negative'.
+Do not explain your answer.
+```
 
 ---
 
-## 📄 License
+### Few-Shot Prompting
 
-Distributed under the **MIT License** — see [`LICENSE`](LICENSE) for details.
+The model receives **8 labeled examples** (4 positive, 4 negative) before classifying new reviews. Examples are randomly sampled from the training set.
+```
+User:   ```{movie_review}```
+Assistant: positive
+```
+
+---
+
+### Chain-of-Thought (CoT) Prompting
+
+The few-shot approach enhanced with **explicit reasoning instructions**:
+```
+Instructions:
+1. Carefully read the text of the review and think through the
+   options for sentiment provided
+2. Consider the overall sentiment of the review and estimate the
+   probability of the review being positive
+3. Answer strictly with the label: positive or negative
+```
+
+---
+
+## 📊 Dataset
+
+### IMDb Movie Reviews
+
+The **IMDb** dataset from HuggingFace Datasets consists of 25,000 movie reviews for training.
+
+### Preprocessing
+
+A `sentiment` column was added to convert numeric labels into human-readable text:
+
+| Label | Sentiment |
+|---|---|
+| `0` | `"negative"` |
+| `1` | `"positive"` |
+
+![IMDb DataFrame preview](cap1.png)
+*Figure: DataFrame visualization with `text`, `label`, and `sentiment` columns*
+
+The dataset is:
+- ✅ **25,000** movie reviews
+- ✅ **3 columns** — text, numeric label, text sentiment
+- ✅ **Balanced** — 50% positive / 50% negative
+
+![Class distribution](cap2.png)
+
+---
+
+## 📈 Evaluation
+
+### Pipeline
+
+1. **Golden Dataset** — 20 randomly selected reviews from the test split
+2. **Evaluation Function** — Each review is passed through the full prompt structure
+3. **Response Parsing** — Extract `positive` or `negative` from model output
+4. **Metric** — Micro F1-score (handles class imbalance gracefully)
+
+### Stability Analysis
+
+To account for variability in few-shot example selection, **10 evaluations** are run with different randomized example sets, computing mean F1-score and standard deviation.
+
+---
+
+## 🏆 Results
+
+### Stability Analysis — 10 Runs
+
+| Metric | 🟡 Few-Shot | 🔴 CoT Few-Shot |
+|---|---|---|
+| **Mean F1-Score** | `0.950` | `0.950` |
+| **Std Deviation** | `± 1.11e-16` | `± 1.11e-16` |
+| **Total Time** | 5 min 11 sec | 5 min 11 sec |
+| **Stability** | ✅ Exceptional | ✅ Exceptional |
+
+![Stability analysis results](imgsentiment1.png)
+
+### Key Insights
+
+> ✅ **GPT-4o** demonstrates robust zero-shot performance on binary sentiment classification
+>
+> ✅ **Few-shot examples** do not degrade performance and may improve reliability on ambiguous reviews
+>
+> ✅ **Chain-of-Thought** reasoning provides interpretability without sacrificing accuracy
+
+---
+
+## 🔮 Future Work
+
+- [ ] Extend to multi-class sentiment (e.g., 1–5 star ratings)
+- [ ] Benchmark against fine-tuned BERT / RoBERTa baselines
+- [ ] Integrate into a full **Multi-Agent System** pipeline
+- [ ] Add automatic prompt optimization (DSPy / PromptBreeder)
+- [ ] Scale evaluation to larger golden datasets
 
 ---
 
 <div align="center">
 
-*If this project was useful to you, consider leaving a ⭐ on GitHub.*
+Made with ❤️ for Multi-Agent Systems Research
 
 </div>
